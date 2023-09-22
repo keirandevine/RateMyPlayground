@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+{% extends 'base.html' %}
+{% import "bootstrap/wtf.html" as wtf %}
+{% block navbar %}
+<header id="header" class="fixed-top d-flex align-items-center">
+    <div class="container d-flex justify-content-between align-items-center">
+
+      <div id="logo">
+        <h1><a href="{{ url_for('home') }}">S&R</a></h1>
+      </div>
+
+      <nav id="navbar" class="navbar">
+        <ul>
+          <li><a class="nav-link scrollto active" href="{{url_for('home')}}">Home</a></li>
+          <li><a class="nav-link" href="{{url_for('ratings')}}">Ratings</a></li>
+          <li><a class="nav-link " href="{{url_for('get_blog')}}" >Blog</a></li>
+        </ul>
+        <i class="bi bi-list mobile-nav-toggle"></i>
+      </nav><!-- .navbar -->
+    </div>
+  </header><!-- End Header -->
+{% endblock %}
+{% block content %}
+
+
+ <section id="hero">
+    <div class="hero-container" data-aos="zoom-in" data-aos-delay="100">
+      <h1>Ratings</h1>
+      <h2>We have actually visited every playground on this list <br>
+        so we can give you the most accurate rating possible 😊
+        <br>
+        <br>
+        Scroll down to check them out
+      </h2>
+       <p><a href="{{url_for('home')}}">Return to index page</a></p>
+    </div>
+  </section>
+
+
+
+
+
+
+    </div>
+  </section><!-- End Hero Section -->
+
+  <div class="col-sm-12">
+
+
+  <table  class="table table-hover" id="ratings-grid" border="5" border-color="#FFC300">
+
+  <tbody>
+  <div>
+  <tr id="rating-headings">
+      <td>Town</td>
+      <td>Location</td>
+      <td>Opening Hours</td>
+      <td>Equipment</td>
+      <td>State of Repair</td>
+      <td>Toilets</td>
+      <td>Lighting</td>
+      <td>Bins</td>
+      <td>Comments</td>
+    </tr>
+</div>
+
+{% for rating in ratings %}
+    <tr>
+      <td>{{rating.town}}</td>
+      <td><a href="{{rating.map_url}}" class="map-link">Map Link</a></td>
+      <td>{{rating.opening_hours}}</td>
+      <td>{{rating.equipment}}</td>
+      <td>{{rating.state_of_repair}}</td>
+      <td>{{rating.toilets}}</td>
+        <td>{{rating.lighting}}</td>
+        <td>{{rating.bins}}</td>
+        <td>{{rating.comments|safe}}</td>
+        <td>
+            <br>
+            <a href="{{ url_for('edit_rating', rating_id=rating.id) }}" class="rating-side-btn">Update</a>
+            <br>
+            <br>
+            <a href="{{ url_for('delete_rating', rating_id=rating.id) }}" class="rating-side-btn">Delete</a>
+        </td>
+    </tr>
+
+  {% endfor %}
+
+  </tbody>
+</table>
+
+    <a class="btn btn-primary float-right" href="{{url_for('create_new_rating')}}" id="new-rating-btn">Add New Rating</a>
+
+
+
+
+      </div>
+
+
+{% endblock %}
+
+</body>
+</html>

@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+
+{% extends 'base.html' %}
+
+
+{% block content %}
+
+
+<body>
+
+
+  <!-- ======= Hero Section ======= -->
+  <section id="hero">
+    <div class="hero-container" data-aos="zoom-in" data-aos-delay="100">
+      <h1>Swings & Roundabouts</h1>
+      <h2>Discover, Rate, and Explore: <br>
+        Unveil the magic of local playgrounds</h2>
+      <a href= "{{ url_for('ratings')}}" class="btn-get-started">Playground Ratings</a>
+
+
+    </div>
+  </section><!-- End Hero Section -->
+
+  <main id="main">
+
+    <!-- ======= About Section ======= -->
+    <section id="about">
+      <div class="container" data-aos="fade-up">
+        <div class="row about-container">
+
+          <div class="col-lg-6 content order-lg-1 order-2">
+            <h2 class="title">Our Mission</h2>
+            <p>
+              At Swings & Roundabouts, we're on a mission to help families find the perfect playgrounds and
+              swing parks for their little ones. We believe that every child deserves a safe and joyful space
+              to play, and we're here to guide you through your local playground adventures.
+            </p>
+
+            <div class="icon-box" data-aos="fade-up" data-aos-delay="100">
+              <div class="icon"><i class="bi bi-clipboard-data"></i></div>
+              <h4 class="title"><a href="">Real Ratings</a></h4>
+              <p class="description">Our ratings are based on actual visits to each playground. We check the
+            equipment, state of repair, maintenance and soak in the overall atmosphere to give you a precise rating</div>
+
+            <div class="icon-box" data-aos="fade-up" data-aos-delay="200">
+              <div class="icon"><i class="bi bi-emoji-heart-eyes"></i></div>
+              <h4 class="title"><a href="">Family First</a></h4>
+              <p class="description"> As parents ourselves, we understand the importance of family-friendly facilities. We
+              check for lighting and toilet facilities to make your adventure stress-free</p>
+            </div>
+
+            <div class="icon-box" data-aos="fade-up" data-aos-delay="300">
+              <div class="icon"><i class="bi bi-chat-dots"></i></div>
+              <h4 class="title"><a href="">Community</a></h4>
+              <p class="description">We invite you to join in on the conversation. Leave us a comment and
+            tell us about your experience in a local park</div>
+
+          </div>
+
+          <div class="col-lg-6 background order-lg-2 order-1" data-aos="fade-left" data-aos-delay="100"></div>
+        </div>
+
+      </div>
+    </section><!-- End About Section -->
+
+    <!-- ======= Blog Section ======= -->
+    <section id="blog">
+   <div class="container">
+
+     <section class="jumbotron text-center">
+    <div class="container">
+      <h1 class="jumbotron-heading">Our Latest Adventures</h1>
+
+    </div>
+  </section>
+
+
+    <!-- Example row of columns -->
+    <div class="row">
+
+     {% for post in posts %}
+      <div class="col-md-4">
+        <div class="card" style="width: 18rem;">
+  <img src="{{post.img_url}}" class="card-img-top" alt="...">
+  <div class="card-body">
+    <h5 class="card-title">{{post.title}}</h5>
+    <p class="card-text">{{post.subtitle}}</p>
+    <a href="{{ url_for('get_blog_post', index=post.id) }}" class="btn btn-primary">Read</a>
+  </div>
+</div>
+      </div>
+
+      {% endfor %}
+
+
+
+
+    <section class="jumbotron text-center">
+    <div class="container">
+
+      <p>
+        <a href="{{ url_for('get_blog') }}" class="btn btn-blog my-2" id="btn-blog">More Adventures</a>
+      </p>
+    </div>
+  </section>
+
+    <hr>
+
+  </div>
+
+
+    <!-- ======= End Blog Section ======= -->
+
+    <!-- ======= Contact Section ======= -->
+    <section id="contact">
+      <div class="container">
+        <div class="section-header">
+          <h3 class="section-title">Get In Touch</h3>
+          <p class="section-description">Wanna give us a suggestion or just let us know about your latest
+          adventure? <br>Feel free to get in touch 😊</p>
+        </div>
+      </div>
+
+      <div class="container mt-5">
+        <div class="row justify-content-center">
+
+          <div class="col-lg-3 col-md-4">
+
+            <div class="info">
+              <div>
+                <i class="bi bi-geo-alt"></i>
+                <p>Co. Cavan<br>Ireland</p>
+              </div>
+
+              <div>
+                <i class="bi bi-envelope"></i>
+                <p>swings&roundabouts@gmail.com</p>
+              </div>
+
+              <div>
+                <i class="bi bi-phone"></i>
+                <p>+35385 118 7833</p>
+              </div>
+            </div>
+
+            <div class="social-links">
+              <a href="#" class="twitter"><i class="bi bi-twitter"></i></a>
+              <a href="#" class="facebook"><i class="bi bi-facebook"></i></a>
+              <a href="#" class="instagram"><i class="bi bi-instagram"></i></a>
+              <a href="#" class="instagram"><i class="bi bi-instagram"></i></a>
+              <a href="#" class="linkedin"><i class="bi bi-linkedin"></i></a>
+            </div>
+
+          </div>
+
+          <div class="col-lg-5 col-md-8">
+            <div class="form">
+              <form action="{{ url_for('get_contact_info') }}" method="POST" role="form" class="php-email-form">
+                <div class="form-group">
+                  <input type="text" name="name" class="form-control" id="name" placeholder="Your Name" required>
+                </div>
+                <div class="form-group mt-3">
+                  <input type="email" class="form-control" name="email" id="email" placeholder="Your Email" required>
+                </div>
+                <div class="form-group mt-3">
+                  <input type="text" class="form-control" name="subject" id="subject" placeholder="Subject" required>
+                </div>
+                <div class="form-group mt-3">
+                  <textarea class="form-control" name="message" rows="5" placeholder="Message" required></textarea>
+                </div>
+                <div class="my-3">
+                  <div class="loading">Loading</div>
+                  <div class="error-message">
+                     {% if error_message %}
+                    {{ error_message }}
+                          {% endif %}
+                  </div>
+                  <div class="sent-message">Your message has been sent. Thank you!</div>
+                </div>
+                <div class="text-center"><button type="submit">Send Message</button></div>
+              </form>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </section><!-- End Contact Section -->
+
+  </main><!-- End #main -->
+
+{% endblock %}
+
+</body>
+
+</html>

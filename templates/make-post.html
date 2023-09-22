@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+{% import "bootstrap/wtf.html" as wtf %}
+
+{% block navbar %}
+<header id="header" class="fixed-top d-flex align-items-center">
+    <div class="container d-flex justify-content-between align-items-center">
+
+      <div id="logo">
+        <h1><a href="{{ url_for('home') }}">S&R</a></h1>
+      </div>
+
+      <nav id="navbar" class="navbar">
+        <ul>
+          <li><a class="nav-link scrollto active" href="{{url_for('home')}}">Home</a></li>
+          <li><a class="nav-link" href="{{url_for('ratings')}}">Ratings</a></li>
+          <li><a class="nav-link " href="{{url_for('get_blog')}}" >Blog</a></li>
+        </ul>
+        <i class="bi bi-list mobile-nav-toggle"></i>
+      </nav><!-- .navbar -->
+    </div>
+  </header><!-- End Header -->
+{% endblock %}
+
+{% block content %}
+
+
+<body>
+  <!-- Page Header -->
+
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-8 col-md-10 mx-auto">
+          <div class="page-heading">
+            {% if id %}
+            <h1>Edit Post</h1>
+            {% else %}
+            <h1>Create New Post</h1>
+            {% endif %}
+            <span class="subheading">You're going to make a great blog post!<br><br></span>
+
+          </div>
+        </div>
+      </div>
+    </div>
+
+  <div class="container form-container">
+    <div class="row">
+      <div class="col-lg-8 col-md-10 mx-auto">
+        
+          <!-- This is where the form will go -->
+          {{ wtf.quick_form(form, button_map={'submit': 'primary'}) }}
+          {{ ckeditor.load() }}
+
+      </div>
+    </div>
+  </div>
+ {% endblock %}
+</body>

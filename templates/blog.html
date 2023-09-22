@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+{% extends 'base.html' %}
+
+
+{% block navbar %}
+<header id="header" class="fixed-top d-flex align-items-center">
+    <div class="container d-flex justify-content-between align-items-center">
+
+      <div id="logo">
+        <h1><a href="{{ url_for('home') }}">S&R</a></h1>
+      </div>
+
+      <nav id="navbar" class="navbar">
+        <ul>
+          <li><a class="nav-link scrollto active" href="{{url_for('home')}}">Home</a></li>
+          <li><a class="nav-link" href="{{url_for('ratings')}}">Ratings</a></li>
+          <li><a class="nav-link " href="{{url_for('get_blog')}}" >Blog</a></li>
+        </ul>
+        <i class="bi bi-list mobile-nav-toggle"></i>
+      </nav><!-- .navbar -->
+    </div>
+  </header><!-- End Header -->
+{% endblock %}
+
+
+
+{% block content %}
+
+
+ <section id="blog">
+     <div class="container">
+  <h1 class="display-4">Our Adventures</h1>
+  <p class="lead">When we visit a playground, we document our adventure from start to finish giving you all the ups and downs along the way.
+  Do you agree with our assessment? Want to share your experience in the playground? Leave a comment and let us know.</p>
+
+
+</div>
+
+   <div class="container">
+
+
+    <!-- Blog Posts -->
+    <div class="row">
+
+      {% for post in all_posts %}
+      <div class="col-md-4">
+               <div class="card" style="width: 18rem;">
+  <img src="{{post.img_url}}" class="card-img-top" alt="...">
+  <div class="card-body">
+    <h5 class="card-title">{{post.title}}</h5>
+    <p class="card-text">{{post.subtitle}}</p>
+    <a href="{{ url_for('get_blog_post', index=post.id) }}" class="btn btn-primary">Read</a>
+     <a href="{{ url_for('delete_blog_post', index=post.id) }}" class="btn btn-primary">Delete</a>
+      <a class="btn btn-primary float-right" href="{{url_for('edit_post', post_id=post.id)}}" >Edit</a>
+  </div>
+      </div>
+
+
+        </div>
+
+      {% endfor %}
+
+
+
+
+  </div>
+
+     <a class="btn btn-primary float-right" href="{{url_for('create_new_post')}}" id="edit-blog-btn">Create New Post</a>
+
+    <!-- ======= End Blog Posts ======= -->
+
+
+
+
+</div>
+{% endblock %}
+
+</body>
+</html>
