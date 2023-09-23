@@ -1,3 +1,4 @@
+import flask
 from flask import Flask, render_template, request, redirect, url_for, jsonify, session, flash
 from flask_bootstrap import Bootstrap
 from flask_sqlalchemy import SQLAlchemy
@@ -7,6 +8,7 @@ from wtforms.validators import DataRequired, URL, email
 from flask_ckeditor import CKEditor, CKEditorField
 from flask_gravatar import Gravatar
 from werkzeug.security import generate_password_hash, check_password_hash
+from sqlalchemy.orm import relationship
 from flask_login import UserMixin, login_user, LoginManager, login_required, current_user, logout_user
 import smtplib
 import secrets
@@ -35,18 +37,30 @@ login_manager.init_app(app)
 
 
 #_____________________________________Configure DB Tables____________________________________________________#
+class User(UserMixin, db.Model):
+    __tablename__ = "users"
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(250), nullable=False)
+    email = db.Column(db.String(250), nullable=False)
+    password = db.Column(db.String(250), nullable=False)
+    posts = relationship("BlogPost", back_populates="author")
+    comments = relationship("Comment", back_populates="comment_author")
 
 class BlogPost(db.Model):
+    __tablename__ = "blog_posts"
     id = db.Column(db.Integer, primary_key=True)
+    author_id = db.Column(db.Integer, db.ForeignKey("users.id"))
+    author = relationship("User", back_populates="posts")
     title = db.Column(db.String(250), unique=True, nullable=False)
     subtitle = db.Column(db.String(250), nullable=False)
     date = db.Column(db.String(250), nullable=False)
     body = db.Column(db.Text, nullable=False)
-    author = db.Column(db.String(250), nullable=False)
     img_url = db.Column(db.String(250), nullable=False)
+    comments = relationship("Comment", back_populates="parent_post")
 
 
 class PlaygroundRating(db.Model):
+    __tablename__ = "ratings"
     id = db.Column(db.Integer, primary_key=True)
     town = db.Column(db.String(50), unique=True, nullable=False)
     map_url = db.Column(db.String(150), nullable=False)
@@ -59,19 +73,20 @@ class PlaygroundRating(db.Model):
     comments = db.Column(db.String(250), nullable=False)
 
 class Comment(db.Model):
+    __tablename__ = "comments"
     id = db.Column(db.Integer, primary_key=True)
+    post_id = db.Column(db.Integer, db.ForeignKey('blog_posts.id'))
+    author_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    parent_post = relationship("BlogPost", back_populates="comments")
+    comment_author = relationship("User", back_populates="comments")
     comment = db.Column(db.String(250), nullable=False)
 
 
-class User(UserMixin, db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(250), nullable=False)
-    email = db.Column(db.String(250), nullable=False)
-    password = db.Column(db.String(250), nullable=False)
 
 
 
 
+#
 # with app.app_context():
 #     db.create_all()
 #______________________________________Create WTF Form______________________________________________________#
@@ -79,7 +94,6 @@ class User(UserMixin, db.Model):
 class CreatePostForm(FlaskForm):
     title = StringField("Blog Post Title", validators=[DataRequired()])
     subtitle = StringField("Subtitle", validators=[DataRequired()])
-    author = StringField("Your Name", validators=[DataRequired()])
     img_url = StringField("Blog Image URL", validators=[DataRequired(), URL()])
     body = CKEditorField("Blog Content", validators=[DataRequired()])
     submit = SubmitField("Submit Post")
@@ -110,6 +124,12 @@ class CreateUserForm(FlaskForm):
     submit = SubmitField("Sign me up")
 
 
+class LoginForm(FlaskForm):
+    email = StringField("Email", validators=[DataRequired()])
+    password = PasswordField("Password", validators=[DataRequired()])
+    submit = SubmitField("Log me in")
+
+
 #_____________________________________Definition of Functions______________________________________________#
 
 
@@ -124,40 +144,70 @@ def send_email(name, email, subject, message):
 
 @login_manager.user_loader
 def load_user(user_id):
-    return User.get(user_id)
+    return User.query.get(int(user_id))
 
 #____________________________________Flask Server Routes___________________________________________________#
 @app.route("/")
 def home():
     recent_posts = db.session.query(BlogPost).order_by(BlogPost.date.desc()).limit(3).all()
-    return render_template("index.html", posts=recent_posts)
+    return render_template("index.html", posts=recent_posts, current_user=current_user)
 
 
 @app.route("/register", methods=['GET', 'POST'])
 def register():
     reg_form = CreateUserForm()
-    if request.method == 'POST':
+    if reg_form.validate_on_submit():
+        if User.query.filter_by(email=reg_form.email.data).first():
+            print(User.query.filter_by(email=reg_form.email.data).first())
+            #User already exists
+            flash("You've already signed up with that email, log in instead!")
+            return redirect(url_for('login'))
         hash_and_salted_password = generate_password_hash(
             reg_form.password.data,
             method='pbkdf2:sha256',
             salt_length=8
         )
-        name = reg_form.name.data
-        email = reg_form.email.data
         new_user = User(
-            name=name,
-            email=email,
+            name=reg_form.name.data,
+            email=reg_form.email.data,
             password=hash_and_salted_password,
         )
         db.session.add(new_user)
         db.session.commit()
+        login_user(new_user)
         return redirect(url_for('home'))
-    return render_template("register.html", form=reg_form)
+    return render_template("register.html", form=reg_form, current_user=current_user)
+
+
+@app.route("/login", methods=['GET', 'POST'])
+def login():
+    form = LoginForm()
+    if form.validate_on_submit():
+        email = form.email.data
+        password = form.password.data
+
+        user = User.query.filter_by(email=email).first()
+        if not user:
+            flask.flash("That email does not exist, please try again")
+            return redirect(url_for('login'))
+        elif not check_password_hash(user.password, password):
+            flask.flash("Password incorrect, please try again")
+            return redirect(url_for('login'))
+        else:
+            login_user(user)
+            return redirect(url_for('home'))
+    return render_template('login.html', form=form, current_user=current_user)
+
+
+@app.route('/logout')
+def logout():
+    logout_user()
+    return redirect(url_for('home'))
 
 @app.route("/ratings")
 def ratings():
     all_ratings = db.session.query(PlaygroundRating).all()
-    return render_template("ratings.html", ratings=all_ratings)
+    return render_template("ratings.html", ratings=all_ratings, current_user=current_user)
 
 @app.route('/contact', methods=['GET', 'POST'])
 def get_contact_info():
@@ -174,22 +224,26 @@ def get_contact_info():
 @app.route('/blog')
 def get_blog():
     posts = db.session.query(BlogPost).all()
-    return render_template('blog.html', all_posts=posts)
+    return render_template('blog.html', all_posts=posts, current_user=current_user)
 
 @app.route('/blog-post/<int:index>', methods=['GET', 'POST'])
 def get_blog_post(index):
     comment_form = CreateCommentForm()
     requested_post = BlogPost.query.get(index)
-    comments = db.session.query(Comment).all()
-    if request.method == 'POST':
-        comment_text = comment_form.comment_text.data
+    if comment_form.validate_on_submit():
+        if not current_user.is_authenticated:
+            flash("You need to login to comment")
+            return redirect(url_for('login'))
+
         new_comment = Comment(
-            comment=comment_text
+            comment=comment_form.comment_text.data,
+            comment_author=current_user,
+            parent_post=requested_post
         )
         db.session.add(new_comment)
         db.session.commit()
 
-    return render_template('blog-post.html', post=requested_post, form=comment_form, comments=comments)
+    return render_template('blog-post.html', post=requested_post, form=comment_form, current_user=current_user)
 
 @app.route('/edit/<int:post_id>', methods=['GET', 'POST'])
 def edit_post(post_id):
@@ -215,30 +269,28 @@ def edit_post(post_id):
         db.session.commit()
         return redirect(url_for('home'))
 
-    return render_template('make-post.html', id=post_id, form=edit_form)
+    return render_template('make-post.html', id=post_id, form=edit_form, current_user=current_user)
 
 
 @app.route("/new-post", methods=['GET', 'POST'])
 def create_new_post():
     form = CreatePostForm()
-    if request.method == 'POST':
-        title = form.title.data
-        subtitle = form.subtitle.data
-        body = form.body.data
-        author = form.author.data
-        img_url = form.img_url.data
+    if form.validate_on_submit():
+        if not current_user.is_authenticated:
+            flash("You need to login to create a new post")
+            return redirect(url_for('login'))
         new_blog =BlogPost(
-            title = title,
-            subtitle=subtitle,
-            body=body,
+            title=form.title.data,
+            subtitle=form.subtitle.data,
+            body=form.body.data,
             date=datetime.datetime.today().strftime('%B-%d-%Y'),
-            author=author,
-            img_url=img_url,
+            author=current_user,
+            img_url=form.img_url.data,
         )
         db.session.add(new_blog)
         db.session.commit()
         return redirect(url_for('get_blog'))
-    return render_template('make-post.html', form=form)
+    return render_template('make-post.html', form=form, current_user=current_user)
 
 @app.route('/delete-post')
 def delete_blog_post():
@@ -276,7 +328,7 @@ def create_new_rating():
         db.session.commit()
         return redirect(url_for('ratings'))
 
-    return render_template('make-rating.html', form=form)
+    return render_template('make-rating.html', form=form, current_user=current_user)
 
 
 @app.route('/edit-rating/<int:rating_id>', methods=['GET', 'POST'])
@@ -316,7 +368,7 @@ def edit_rating(rating_id):
         db.session.commit()
         return redirect(url_for('ratings'))
 
-    return render_template('make-rating.html', id=rating_id, form=edit_form)
+    return render_template('make-rating.html', id=rating_id, form=edit_form, current_user=current_user)
 
 @app.route('/delete-rating')
 def delete_rating():

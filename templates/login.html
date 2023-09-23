@@ -32,10 +32,10 @@
         <div class="col-lg-8 col-md-10 mx-auto">
           <div class="page-heading">
 
-            <h1>Register here</h1>
+            <h1>Login here</h1>
 
 
-            <span class="subheading">It's so easy 😊<br><br></span>
+            <span class="subheading">It takes 2 seconds 😊<br><br></span>
 
           </div>
         </div>
@@ -45,6 +45,14 @@
   <div class="container form-container">
     <div class="row">
       <div class="col-lg-8 col-md-10 mx-auto">
+
+            {% with messages = get_flashed_messages() %}
+                 {% if messages %}
+                    {% for message in messages %}
+                       <p>{{ message }}</p>
+                    {% endfor %}
+                 {% endif %}
+            {% endwith %}
         
           <!-- This is where the form will go -->
           {{ wtf.quick_form(form, button_map={'submit': 'primary'}) }}

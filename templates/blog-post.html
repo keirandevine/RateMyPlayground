@@ -41,7 +41,7 @@
                             <!-- Post title-->
                             <h1  id="blog-post-title">{{post.title}}</h1>
                             <!-- Post meta content-->
-                            <div class="text-muted fst-italic mb-2">Posted {{post.date}} by {{post.author}}</div>
+                            <div class="text-muted fst-italic mb-2">Posted {{post.date}} by {{post.author.name}}</div>
                             <!-- Post categories-->
 
                         <!-- Preview image figure-->
@@ -58,14 +58,14 @@
                 </div>
 
                  <div class="col-lg-8 col-md-10 mx-auto comment">
-                    {% for comment in comments: %}
+                    {% for comment in post.comments: %}
                     <ul class="commentList">
                         <li>
                             <div class="commenterImage">
-                                <img src="{{ 'keirandevinetest@gmail.com' | gravatar }}"/>
+                                <img src="{{ comment.comment_author.email | gravatar }}"/>
                             </div>
                             <div class="commentText">
-                                <span class="date sub-text commenter-name">John Doe</span>
+                                <span class="date sub-text commenter-name">{{comment.comment_author.name}}</span>
                                 {{comment.comment|safe}}
 
 

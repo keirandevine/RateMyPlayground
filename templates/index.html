@@ -13,7 +13,7 @@
   <!-- ======= Hero Section ======= -->
   <section id="hero">
     <div class="hero-container" data-aos="zoom-in" data-aos-delay="100">
-      <h1>Swings & Roundabouts</h1>
+      <h1>Rate My Playground</h1>
       <h2>Discover, Rate, and Explore: <br>
         Unveil the magic of local playgrounds</h2>
       <a href= "{{ url_for('ratings')}}" class="btn-get-started">Playground Ratings</a>
@@ -82,7 +82,7 @@
      {% for post in posts %}
       <div class="col-md-4">
         <div class="card" style="width: 18rem;">
-  <img src="{{post.img_url}}" class="card-img-top" alt="...">
+  <img src="{{post.img_url}}" class="card-img-top" alt="..." width="100%" height="200px">
   <div class="card-body">
     <h5 class="card-title">{{post.title}}</h5>
     <p class="card-text">{{post.subtitle}}</p>
