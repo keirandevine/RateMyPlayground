@@ -1,8 +1,9 @@
 import flask
-from flask import Flask, render_template, request, redirect, url_for, jsonify, session, flash
+from flask import Flask, render_template, request, redirect, url_for, jsonify, session, flash, abort
 from flask_bootstrap import Bootstrap
 from flask_sqlalchemy import SQLAlchemy
 from flask_wtf import FlaskForm
+from functools import wraps
 from wtforms import StringField, SubmitField, IntegerField, SelectField, PasswordField
 from wtforms.validators import DataRequired, URL, email
 from flask_ckeditor import CKEditor, CKEditorField
@@ -134,12 +135,23 @@ class LoginForm(FlaskForm):
 
 
 def send_email(name, email, subject, message):
+    """Formats and sends email using the name, email, subject and message input into contact form"""
     email_message = f"Subject: New Message\n\nName: {name}\nEmail: {email}\nSubject: {subject}\nMessage: {message}"
     with smtplib.SMTP('smtp.gmail.com') as connection:
         connection.starttls()
         connection.login(user=MY_EMAIL, password=EMAIL_PW)
         connection.sendmail(from_addr=MY_EMAIL, to_addrs=MY_EMAIL, msg=email_message)
         connection.close()
+
+def admin_only(f):
+    """Wrap function aborts the execution of inner function if user is not an admin"""
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if current_user.id != 1:
+            return abort(403)
+        return f(*args, **kwargs)
+    return decorated_function
+
 
 
 @login_manager.user_loader
@@ -149,12 +161,14 @@ def load_user(user_id):
 #____________________________________Flask Server Routes___________________________________________________#
 @app.route("/")
 def home():
+    """Gets 3 most recent posts from database and passes them into the index template"""
     recent_posts = db.session.query(BlogPost).order_by(BlogPost.date.desc()).limit(3).all()
     return render_template("index.html", posts=recent_posts, current_user=current_user)
 
 
 @app.route("/register", methods=['GET', 'POST'])
 def register():
+    """Registers new user and adds to the database. If email already exists in database, redirects to login page"""
     reg_form = CreateUserForm()
     if reg_form.validate_on_submit():
         if User.query.filter_by(email=reg_form.email.data).first():
@@ -181,6 +195,7 @@ def register():
 
 @app.route("/login", methods=['GET', 'POST'])
 def login():
+    """Logs user in. If email not in database or password incorrect, flashes an error message"""
     form = LoginForm()
     if form.validate_on_submit():
         email = form.email.data
@@ -201,33 +216,40 @@ def login():
 
 @app.route('/logout')
 def logout():
+    """Logs user out and redirects to the home page"""
     logout_user()
     return redirect(url_for('home'))
 
 @app.route("/ratings")
 def ratings():
+    """Get all ratings from the database and pass into the ratings template"""
     all_ratings = db.session.query(PlaygroundRating).all()
     return render_template("ratings.html", ratings=all_ratings, current_user=current_user)
 
 @app.route('/contact', methods=['GET', 'POST'])
 def get_contact_info():
-    try:
-        name = request.form['name']
-        email = request.form['email']
-        subject = request.form['subject']
-        message = request.form['message']
-        send_email(name, email, subject, message)
-        return "Message sent successfully"
-    except Exception:
-        return "An error has occured"
+    """Gets hold of information input into contact form and calls the send_email function. Raises error if email cannot be sent"""
+    if request.method == 'POST':
+        try:
+            name = request.form['name']
+            email = request.form['email']
+            subject = request.form['subject']
+            message = request.form['message']
+            send_email(name, email, subject, message)
+            return "Message sent successfully"
+        except Exception:
+            return "An error has occured"
 
 @app.route('/blog')
 def get_blog():
+    """Get all blog posts from database and passes into the blog template"""
     posts = db.session.query(BlogPost).all()
     return render_template('blog.html', all_posts=posts, current_user=current_user)
 
 @app.route('/blog-post/<int:index>', methods=['GET', 'POST'])
 def get_blog_post(index):
+    """Create new comment form and get hold of the blog post at the requested index, then pass these into the blog-post template.
+    If user is not logged in and tries to comment, redirects to login page, otherwise adds the comment to database"""
     comment_form = CreateCommentForm()
     requested_post = BlogPost.query.get(index)
     if comment_form.validate_on_submit():
@@ -246,26 +268,22 @@ def get_blog_post(index):
     return render_template('blog-post.html', post=requested_post, form=comment_form, current_user=current_user)
 
 @app.route('/edit/<int:post_id>', methods=['GET', 'POST'])
+@admin_only
 def edit_post(post_id):
+    """Creates new post edit form and populates it with the information from the selected  post. Updates database with
+    new information"""
     post_to_edit = BlogPost.query.get(post_id)
     edit_form = CreatePostForm(
         title=post_to_edit.title,
         subtitle=post_to_edit.subtitle,
-        author=post_to_edit.author,
         img_url=post_to_edit.img_url,
         body=post_to_edit.body
     )
-    if request.method =='POST':
-        title = edit_form.title.data
-        subtitle = edit_form.subtitle.data
-        body = edit_form.body.data
-        author = edit_form.author.data
-        img_url = edit_form.img_url.data
-        post_to_edit.title = title
-        post_to_edit.subtitle = subtitle
-        post_to_edit.body = body
-        post_to_edit.author = author
-        post_to_edit.img_url = img_url
+    if edit_form.validate_on_submit():
+        post_to_edit.title = edit_form.title.data
+        post_to_edit.subtitle = edit_form.subtitle.data
+        post_to_edit.body = edit_form.body.data
+        post_to_edit.img_url = edit_form.img_url.data
         db.session.commit()
         return redirect(url_for('home'))
 
@@ -273,7 +291,10 @@ def edit_post(post_id):
 
 
 @app.route("/new-post", methods=['GET', 'POST'])
+@admin_only
 def create_new_post():
+    """Creates new create post form and passes into the new-post template. If user not logged in, they are redirected to
+    the login page with an error message. After new form is submitted, user gets redirected to the blog display page"""
     form = CreatePostForm()
     if form.validate_on_submit():
         if not current_user.is_authenticated:
@@ -293,7 +314,10 @@ def create_new_post():
     return render_template('make-post.html', form=form, current_user=current_user)
 
 @app.route('/delete-post')
+@admin_only
 def delete_blog_post():
+    #TODO add flash message to make sure student wants to delete post
+    """Deletes the chosen post from the database"""
     post_id = request.args.get('index')
     post_to_delete = BlogPost.query.get(post_id)
     db.session.delete(post_to_delete)
@@ -301,28 +325,21 @@ def delete_blog_post():
     return redirect(url_for('get_blog'))
 
 @app.route('/new-rating', methods=['GET','POST'])
+@admin_only
 def create_new_rating():
+    """Creates a new rating form and passes into the make-rating template. Adds new rating to database"""
     form = CreateRatingForm()
-    if request.method == 'POST':
-        town = form.town.data
-        map_url = form.map_url.data
-        opening_hours = form.opening_hours.data
-        equipment = form.equipment.data
-        state_of_repair = form.state_of_repair.data
-        toilets = form.toilets.data
-        lighting = form.lighting.data
-        bins = form.bins.data
-        comments = form.comments.data
+    if form.validate_on_submit():
         new_rating = PlaygroundRating(
-            town=town,
-            map_url=map_url,
-            opening_hours=opening_hours,
-            equipment=equipment,
-            state_of_repair=state_of_repair,
-            toilets=toilets,
-            lighting=lighting,
-            bins=bins,
-            comments=comments
+            town=form.town.data,
+            map_url=form.map_url.data,
+            opening_hours=form.opening_hours.data,
+            equipment=form.equipment.data,
+            state_of_repair=form.state_of_repair.data,
+            toilets=form.toilets.data,
+            lighting=form.lighting.data,
+            bins=form.bins.data,
+            comments=form.comments.data
         )
         db.session.add(new_rating)
         db.session.commit()
@@ -332,7 +349,10 @@ def create_new_rating():
 
 
 @app.route('/edit-rating/<int:rating_id>', methods=['GET', 'POST'])
+@admin_only
 def edit_rating(rating_id):
+    """Creates a new edit form and populates it with information from chosen rating. If form gets validated, updates the rating
+    in the database"""
     rating_to_edit = PlaygroundRating.query.get(rating_id)
     edit_form = CreateRatingForm(
         town=rating_to_edit.town,
@@ -345,33 +365,26 @@ def edit_rating(rating_id):
         bins=rating_to_edit.bins,
         comments=rating_to_edit.comments
     )
-    if request.method =='POST':
-        town = edit_form.town.data
-        map_url = edit_form.map_url.data
-        opening_hours = edit_form.opening_hours.data
-        equipment = edit_form.equipment.data
-        state_of_repair = edit_form.state_of_repair.data
-        toilets = edit_form.toilets.data
-        lighting = edit_form.lighting.data
-        bins = edit_form.bins.data
-        comments = edit_form.comments.data
+    if edit_form.validate_on_submit:
 
-        rating_to_edit.town = town
-        rating_to_edit.map_url = map_url
-        rating_to_edit.opening_hours = opening_hours
-        rating_to_edit.equipment = equipment
-        rating_to_edit.state_of_repair = state_of_repair
-        rating_to_edit.toilets = toilets
-        rating_to_edit.lighting = lighting
-        rating_to_edit.bins = bins
-        rating_to_edit.comments = comments
+        rating_to_edit.town = edit_form.town.data
+        rating_to_edit.map_url = edit_form.map_url.data
+        rating_to_edit.opening_hours = edit_form.opening_hours.data
+        rating_to_edit.equipment =  edit_form.equipment.data
+        rating_to_edit.state_of_repair = edit_form.state_of_repair.data
+        rating_to_edit.toilets = edit_form.toilets.data
+        rating_to_edit.lighting = edit_form.lighting.data
+        rating_to_edit.bins = edit_form.bins.data
+        rating_to_edit.comments = edit_form.comments.data
         db.session.commit()
         return redirect(url_for('ratings'))
 
     return render_template('make-rating.html', id=rating_id, form=edit_form, current_user=current_user)
 
 @app.route('/delete-rating')
+@admin_only
 def delete_rating():
+    """Deletes the selected rating from the database"""
     rating_id = request.args.get('rating_id')
     rating_to_delete = PlaygroundRating.query.get(rating_id)
     db.session.delete(rating_to_delete)
