@@ -8,12 +8,80 @@
 
 
 <body>
+<script>
+console.log('Script is running!');
+
+// Variable to keep track of the currently open popup
+var openPopup = null;
+
+window.addEventListener('load', function() {
+  // Check if the URL contains the query parameter indicating a scroll to ratings
+  var urlParams = new URLSearchParams(window.location.search);
+  if (urlParams.get('scroll_to_ratings') === 'true') {
+    // Page was reloaded with a query parameter indicating a scroll to ratings
+    // Scroll to the ratings section
+    var ratingsSection = document.getElementById('ratings'); // Replace 'ratings' with the actual ID of your ratings section
+    if (ratingsSection) {
+      ratingsSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }
+});
+
+function popUp(event) {
+  var button = event.currentTarget;
+  var popup = button.querySelector(".popuptext");
+
+  // Close the currently open popup if any
+  if (openPopup && openPopup !== popup) {
+    openPopup.classList.remove("show");
+  }
+
+  // Toggle the new popup
+  popup.classList.toggle("show");
+
+  // Update the openPopup variable
+  openPopup = popup;
+
+  // Add a console log message
+  console.log("Popup function triggered!");
+
+  // Add an event listener to close the popup when clicking anywhere on the screen
+  window.addEventListener('click', closePopupOutside);
+
+  // Prevent the click event from reaching the window immediately
+  event.stopPropagation();
+}
+
+function closePopupOutside(event) {
+  // Check if the clicked element is outside of the currently open popup
+  if (openPopup && !openPopup.contains(event.target)) {
+    openPopup.classList.remove("show");
+    openPopup = null;
+    window.removeEventListener('click', closePopupOutside); // Remove the event listener after closing the popup
+  }
+}
+</script>
+
+
+
+
+{% if autoscroll == 'true' %}
+    <script>
+        // Autoscroll to the ratings section using JavaScript
+        document.addEventListener('DOMContentLoaded', function() {
+            var ratingsSection = document.getElementById('ratings');  // Replace 'ratings-section' with the actual ID of your ratings section
+            if (ratingsSection) {
+                ratingsSection.scrollIntoView({ behavior: 'smooth' });
+            }
+        });
+    </script>
+{% endif %}
 
 
   <!-- ======= Hero Section ======= -->
   <section id="hero">
     <div class="hero-container" data-aos="zoom-in" data-aos-delay="100">
-      <h1>Rate My Play</h1>
+      <img class="hero-img" src="static/assets/img/logo.png" width="600px">
       <h2>Discover, Rate, and Explore: <br>
         Unveil the magic of local playgrounds</h2>
       <a href= "{{ url_for('ratings')}}" class="btn-get-started">Playground Ratings</a>
@@ -64,13 +132,93 @@
       </div>
     </section><!-- End About Section -->
 
+    <!-- ======= Ratings Section -->
+    <section id="ratings">
+    <div  class="paddsection">
+  <div class="container">
+    <div class="section-title text-center">
+      <h2 id="portfolio-title">Rankings</h2>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-12 d-flex justify-content-center">
+        <div class="btn-group sort-btn-group">
+            <a style="{% if sort == 'overall' %} color: #333; {% endif %}" class="button sort-button" href="{{ url_for('sort_ratings', sort='overall') }}" >Overall</a>
+            <a style="{% if sort == 'cleanliness' %} color: #333; {% endif %}" class="button sort-button" href="{{ url_for('sort_ratings', sort='cleanliness') }}">Cleanliness</a>
+            <a style="{% if sort == 'equipment' %} color: #333; {% endif %}" class="button sort-button" href="{{ url_for('sort_ratings', sort='equipment') }}">Equipment</a>
+            <a style="{% if sort == 'facilities' %} color: #333; {% endif %}" class="button sort-button" href="{{ url_for('sort_ratings', sort='facilities') }}">Facilities</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+    {% for rating in ratings %}
+        <div class="col-md-4 col-sm-12 blog-card">
+            <div class="card" style="position: relative;">
+                <img src="{{ rating.image_url }}" class="card-img-top" alt="..." width="100%" height="200rem">
+                <div class="card-overlay">
+                    <h1 class="ranking">#{{ loop.index }}  {{ rating.town }}</h1>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 col-sm-12 mb-2">
+                            <button type="button" class="btn btn-primary w-100 popup" title="Click to see full rating" data-delay="10" style="margin-right: 2px" onclick="popUp(event)">
+                                Full Rating
+                                <span class="popuptext" id="myPopup">
+                                    <strong>Opening Hours:</strong> {{ rating.opening_hours }}<br>
+                                    <strong>Equipment:</strong> {{ rating.equipment }}<br>
+                                    <strong>State of Repair:</strong> {{ rating.state_of_repair }}<br>
+                                    <strong>Toilets:</strong> {{ rating.toilets }}<br>
+                                    <strong>Lighting:</strong> {{ rating.lighting }}<br>
+                                    <strong>Bins:</strong> {{ rating.bins }}<br>
+                                    <strong>Map Link:</strong> <a href="{{ rating.map_url }}" target="_blank">{{ rating.map_url }}</a><br>
+                                </span>
+                            </button>
+                        </div>
+                        <div class="col-md-6 col-sm-12 mb-2">
+                            <button type="button" class="btn btn-primary w-100 popup" title="Click to see rating comments" data-delay="100" style="margin-left: 2px" onclick="popUp(event)">
+                                Comment
+                                <span class="popuptext custom-popup" id="commentPopup">
+                                    <strong>Comments</strong> <br><br>{{ rating.comments | safe }}<br>
+                                </span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+</div>
+
+
+  </div>
+
+
+
+</div>
+
+         <div class="row">
+            <div class="col-md-12 text-center mt-3">
+              <a class="btn btn-primary all-ratings-btn" href="{{ url_for('ratings') }}">See All Ratings</a>
+            </div>
+         </div>
+
+      </section>
+
+
+
+
+    <!-- ======= End Ratings Section ======= -->
+
     <!-- ======= Blog Section ======= -->
     <section id="blog">
-   <div class="container">
+   <div class="container blog-container" style="margin-top: 0px;">
 
      <section class="jumbotron text-center">
     <div class="container">
-      <h1 class="jumbotron-heading">Our Latest Adventures</h1>
+      <h2 class="jumbotron-heading">Our Latest Adventures</h2>
 
     </div>
   </section>
@@ -78,34 +226,26 @@
 
     <!-- Example row of columns -->
     <div class="row">
+        {% for post in posts %}
+            <div class="col-md-4 col-sm-12 blog-card">
+                <div class="card">
+                    <img src="{{post.img_url}}" class="card-img-top" alt="..." width="100%" height="200rem">
+                    <div class="card-body" style="height:16rem">
+                        <h5 class="card-title">{{post.title}}</h5>
+                        <p class="card-text">{{post.subtitle}}</p>
+                        <a href="{{ url_for('get_blog_post', index=post.id) }}" class="btn btn-primary">Read</a>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
 
-     {% for post in posts %}
-      <div class="col-md-4">
-        <div class="card" style="width: 18rem;">
-  <img src="{{post.img_url}}" class="card-img-top" alt="..." width="100%" height="200px">
-  <div class="card-body">
-    <h5 class="card-title">{{post.title}}</h5>
-    <p class="card-text">{{post.subtitle}}</p>
-    <a href="{{ url_for('get_blog_post', index=post.id) }}" class="btn btn-primary">Read</a>
-  </div>
-</div>
-      </div>
+        <div class="row">
+                    <div class="col-md-12 text-center mt-3">
+                      <a class="btn btn-primary all-ratings-btn" href="{{ url_for('ratings') }}">See All Blog Posts</a>
+                    </div>
+         </div>
 
-      {% endfor %}
-
-
-
-
-    <section class="jumbotron text-center">
-    <div class="container">
-
-      <p>
-        <a href="{{ url_for('get_blog') }}" class="btn btn-blog my-2" id="btn-blog">More Adventures</a>
-      </p>
     </div>
-  </section>
-
-    <hr>
 
   </div>
 
@@ -129,6 +269,10 @@
 
             <div class="info">
               <div>
+                <h3 class="contact-sub-heading">Contact Information</h3>
+              </div>
+
+              <div>
                 <i class="bi bi-geo-alt"></i>
                 <p>Co. Cavan<br>Ireland</p>
               </div>
@@ -145,17 +289,17 @@
             </div>
 
             <div class="social-links">
-              <a href="#" class="twitter"><i class="bi bi-twitter"></i></a>
               <a href="#" class="facebook"><i class="bi bi-facebook"></i></a>
               <a href="#" class="instagram"><i class="bi bi-instagram"></i></a>
-              <a href="#" class="instagram"><i class="bi bi-instagram"></i></a>
-              <a href="#" class="linkedin"><i class="bi bi-linkedin"></i></a>
             </div>
 
           </div>
 
           <div class="col-lg-5 col-md-8">
-            <div class="form">
+            <div>
+                <h3 class="contact-sub-heading">Send Us A Message</h3>
+              </div>
+            <div class="form contact-form">
               <form action="{{ url_for('get_contact_info') }}" method="POST" role="form" class="php-email-form">
                 <div class="form-group">
                   <input type="text" name="name" class="form-control" id="name" placeholder="Your Name" required>
@@ -178,7 +322,7 @@
                   </div>
                   <div class="sent-message">Your message has been sent. Thank you!</div>
                 </div>
-                <div class="text-center"><button type="submit">Send Message</button></div>
+                <div  class="text-center"><button  type="submit" id="submit-btn">Send Message</button></div>
               </form>
             </div>
           </div>
@@ -190,7 +334,10 @@
 
   </main><!-- End #main -->
 
+
 {% endblock %}
+<!-- Add this script at the bottom of your HTML template, before the </body> tag -->
+
 
 </body>
 

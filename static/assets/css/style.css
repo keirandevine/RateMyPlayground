@@ -45,6 +45,173 @@ h6 {
   padding: 0;
 }
 
+.btn-group {
+      display: inline-flex;
+      border: 3px solid #C0C0C0;
+      border-radius: 50px; /* Adjust the border-radius as needed */
+      overflow: hidden; /* Ensure the border-radius is applied */
+      margin-bottom: 40px;
+    }
+
+.btn-group .button {
+  background-color: white; /* Green */
+  border: none;
+  color: #C0C0C0;
+  font-weight: bold;
+  font-family: "Quicksand", sans-serif;
+  padding: 15px 32px;
+  text-align: center;
+  text-decoration: underline;
+  display: inline-block;
+  font-size: 16px;
+  cursor: pointer;
+  float: left;
+}
+
+
+
+.btn-group .button:hover {
+  color: #333;
+}
+
+
+/* Media query for screens smaller than 800px */
+@media (max-width: 800px) {
+  /* Reset display property to stack items vertically */
+  .sort-btn-group {
+    flex-direction: row;
+    flex-wrap: wrap; /* Allow items to wrap onto the next line */
+    justify-content: space-evenly; /* Distribute items evenly */
+  }
+
+  /* Optionally, adjust individual buttons if needed */
+  .sort-button {
+    width: 50%; /* Set the width of each button to fit two buttons in a row with some spacing */
+  }
+}
+
+
+
+.card {
+    position: relative;
+}
+
+.card-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 10px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    color: #fff; /* Adjust the color as needed */
+}
+
+.ranking {
+    font-size: 1.5rem; /* Adjust the font size as needed */
+    font-weight: bold;
+    text-align: center;
+    width: 250px;
+    color: #333;
+    background: #fff;
+    border-radius: 1px;
+    border: 2px solid #5463FF;
+    padding: 2px;
+}
+
+.map-link{
+    color: #5463FF;
+    font-weight: bold;
+}
+
+
+
+
+
+.card-body {
+    padding: 5px;
+    text-align: left;
+    max-height: 200px;
+
+}
+
+/* popup controls */
+
+.popup {
+  position: relative;
+  display: inline-block;
+  cursor: pointer;
+
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+/* The actual popup */
+.popup .popuptext {
+  visibility: hidden;
+  width: 280px;
+  background-color: #fff;
+  color: #333;
+  border: 2px solid #5463FF;
+  text-align: left;
+  border-radius: 6px;
+  padding: 10px;
+  position: absolute;
+  z-index: 999;
+  bottom: 125%;
+  left: 50%;
+  margin-left: -80px;
+}
+
+.popup #commentPopup{
+    font-weight: normal;
+    text-align: center;
+
+}
+
+
+
+.custom-popup {
+    max-height: 343px;
+    overflow-y: auto; /* Add a scrollbar when content exceeds the max-height */
+  }
+
+/* Popup arrow */
+.popup .popuptext::after {
+
+  top: 100%;
+  left: 50%;
+  margin-left: -5px;
+  border-width: 5px;
+  border-style: solid;
+  border-color: #fff transparent transparent transparent;
+}
+
+
+
+/* Toggle this class - hide and show the popup */
+.popup .show {
+  visibility: visible;
+  -webkit-animation: fadeIn 1s;
+  animation: fadeIn 1s;
+}
+
+/* Add animation (fade in the popup) */
+@-webkit-keyframes fadeIn {
+  from {opacity: 0;}
+  to {opacity: 1;}
+}
+
+@keyframes fadeIn {
+  from {opacity: 0;}
+  to {opacity:1 ;}
+}
+
 /*--------------------------------------------------------------
 # Back to top button
 --------------------------------------------------------------*/
@@ -69,7 +236,7 @@ h6 {
 }
 
 .back-to-top:hover {
-  background: #FFE57E;
+  background: #1F2E6E;
   color: #FFC300;
   border-style: solid;
   border-color: #FFC300;
@@ -290,7 +457,7 @@ h6 {
 }
 
 /**
-* Mobile Navigation 
+* Mobile Navigation
 */
 .mobile-nav-toggle {
   color: #ECECEC;
@@ -343,6 +510,8 @@ h6 {
   transition: 0.3s;
 }
 
+
+
 .navbar-mobile>ul>li {
   padding: 0;
 }
@@ -358,6 +527,10 @@ h6 {
   padding: 10px 20px;
   font-size: 15px;
   color: #666666;
+}
+
+.navbar-mobile .login-btn{
+    color: #fff;
 }
 
 .navbar-mobile a:hover,
@@ -404,6 +577,7 @@ h6 {
 .navbar-mobile .dropdown>.dropdown-active {
   display: block;
 }
+
 
 /*--------------------------------------------------------------
 # Hero Section
@@ -455,12 +629,16 @@ h6 {
   color: #ECECEC;
 }
 
+
+
 @media (max-width: 768px) {
   #hero h1 {
     font-size: 28px;
     line-height: 36px;
   }
 }
+
+
 
 #hero h2 {
   font-family: "Quicksand";
@@ -474,6 +652,12 @@ h6 {
     font-size: 18px;
     line-height: 24px;
     margin-bottom: 30px;
+  }
+}
+
+@media (max-width: 380px) {
+  .hero-img{
+    width: 250px;
   }
 }
 
@@ -493,7 +677,7 @@ h6 {
 }
 
 #hero .btn-get-started:hover {
-  background: #FFC300;
+  background: #1F2E6E;
   border: 2px solid #FFC300;
 }
 
@@ -521,8 +705,8 @@ section {
 
 .section-header .section-description {
   text-align: center;
-  padding-bottom: 40px;
-  color: #999;
+
+  color: #333;
 }
 
 /*--------------------------------------------------------------
@@ -606,9 +790,13 @@ section {
   font-size: 32px;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 950px) {
   #about .about-container .title {
     padding-top: 15px;
+  }
+
+  #about .about-container .background {
+    display: none; /* or background: none; */
   }
 }
 
@@ -864,8 +1052,13 @@ color: #999999;
 
 .jumbotron-heading{
     color: #333;
+    font-weight: bold;
+    padding-bottom: 15px;
+
 
 }
+
+
 
 .blog-post-title{
     color:#333;
@@ -889,21 +1082,54 @@ color: #999999;
 
 .btn-primary{
     --bs-btn-hover-color: #ECECEC;
+
 }
 
 .btn-primary:hover{
    background-color: #1F2E6E;
-    border: 2px solid;
-    border-color: #5463FF;
+    border: 2px solid #FFC300;
+    border-color: #FFC300;
+}
+
+/* For screens up to 600px */
+@media (max-width: 650px) {
+    .blog-card {
+        width: 100%; /* Set the width to 100% for screens less than or equal to 600px */
+        margin-bottom: 1rem;
+    }
+
+    .col-md-4 {
+        max-width: 100%;
+        flex: none;
+    }
+}
+
+/* For screens between 601px and 991px */
+@media (min-width: 651px) and (max-width: 991px) {
+    .blog-card {
+        width: 50%; /* Set the width to 50% for screens between 601px and 991px */
+        margin-bottom: 1rem;
+    }
+
+    .col-md-4 {
+        max-width: 50%;
+        flex: none;
+    }
 }
 
 
 
+
+.blog-container{
+    padding-bottom: 50px;
+    }
+
 /* Contact Section
 --------------------------------*/
 #contact {
-  background: #f7f7f7;
-  padding: 80px 0 40px 0;
+  background-image: url('../../assets/img/brushed-background.png');
+  background-color: #8193ff;
+  padding: 30px 0 30px 0;
 }
 
 #contact #google-map {
@@ -939,8 +1165,8 @@ color: #999999;
 
 #contact .social-links a {
   font-size: 18px;
-  background: #333;
-  color: #fff;
+  background: #fff;
+  color: #FFC300;
   line-height: 1;
   border-radius: 50%;
   text-align: center;
@@ -960,6 +1186,8 @@ color: #999999;
   background: #FFC300;
   color: #fff;
 }
+
+
 
 
 
@@ -1005,14 +1233,19 @@ color: #999999;
 
 #contact .php-email-form button[type=submit] {
   background: #5463FF;
-  border: 0;
+  border: 2px solid #FFC300;
   padding: 10px 24px;
+  border-radius: 6px;
   color: #fff;
   transition: 0.4s;
 }
 
 #contact .php-email-form button[type=submit]:hover {
-  background: #FFC300;
+  background: #1F2E6E;
+}
+
+.contact-sub-heading{
+    margin-bottom: 10px;
 }
 
 @keyframes animate-loading {
@@ -1024,6 +1257,9 @@ color: #999999;
     transform: rotate(360deg);
   }
 }
+
+
+
 
 /*--------------------------------------------------------------
 # Footer
@@ -1054,6 +1290,12 @@ color: #999999;
 #ratings-grid{
 	border-color: #FFC300;
 	}
+
+#portfolio-title{
+    padding-top: 30px;
+    padding-bottom: 15px;
+    font-weight: bold;
+}
 
 .rating-side-btn{
   background-color: #5463FF;
@@ -1120,7 +1362,8 @@ color: #999999;
 }
 
 #blog{
-    margin-top: 60px;
+    margin-top: 30px;
+
     }
 
 /*--------------------------------------------------------------
@@ -1143,6 +1386,7 @@ color: #999999;
 #rating-headings{
     font-weight: bold;
 }
+
 
 
 
@@ -1213,6 +1457,7 @@ color: #999999;
 
 
 
+
 /*--------------------------------------------------------------
 # Create Ratings / Blogpost Form
 --------------------------------------------------------------*/
@@ -1223,3 +1468,102 @@ color: #999999;
 .page-heading{
     margin-top: 100px
 }
+
+/*--------------------------------------------------------------
+# Ratings Gallery
+--------------------------------------------------------------*/
+
+.ratings-heading{
+    text-align: center;
+    margin-bottom: 20px;
+}
+#ratings {
+      position: relative;
+      padding-bottom: 50px;
+      background: url('../../assets/img/background.jpg'); /* Use your image URL */
+      background-repeat: repeat; /* Repeat the background image */
+
+      color: #191717;
+    }
+
+    #ratings #portfolio-flters {
+      padding: 0;
+      margin: 0 auto 35px auto;
+      list-style: none;
+      text-align: center;
+      border-radius: 50px;
+      padding: 2px 15px;
+      background: #F1EFEF;
+    }
+
+    #ratings #portfolio-flters li {
+      cursor: pointer;
+      display: inline-block;
+      padding: 10px 15px 8px 15px;
+      font-size: 14px;
+      font-weight: 600;
+      line-height: 1;
+      text-transform: uppercase;
+      color: #7D7C7C;
+      margin-bottom: 5px;
+      transition: all 0.3s ease-in-out;
+      background: #F1EFEF;
+    }
+
+    #ratings #portfolio-flters li:hover,
+    #ratings #portfolio-flters li.filter-active {
+      color: #191717;
+    }
+
+    #ratings #portfolio-flters li:last-child {
+      margin-right: 0;
+    }
+
+    #ratings .portfolio-item {
+      margin-bottom: 30px;
+      color: #191717;
+    }
+
+    #ratings h2{
+        color: #F1EFEF;
+    }
+
+    .portfolio-card{
+        background: #F1EFEF;
+        color: #191717;
+
+    }
+
+    .card-text{
+        height: 80px;
+        overflow: hidden;
+
+
+    }
+
+    .portfolio-icon{
+        font-size: 25px;
+    }
+
+    .card-title{
+        text-align: center;
+    }
+
+    .btn-group-horizontal .btn {
+        border-right: 2px solid #C0C0C0; /* Add a border to the right side of each button */
+    }
+
+    .btn-group-horizontal .btn:last-child {
+        border-right: none; /* Remove the border for the last button */
+    }
+
+
+.all-ratings-btn{
+    background: #fff;
+    color: #1F2E6E;
+    border: 2px solid #FFC300;
+    width: 220px;
+
+}
+
+

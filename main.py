@@ -65,6 +65,7 @@ class PlaygroundRating(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     town = db.Column(db.String(50), unique=True, nullable=False)
     map_url = db.Column(db.String(150), nullable=False)
+    image_url = db.Column(db.String(250), nullable=False)
     opening_hours = db.Column(db.String(50), nullable=False)
     equipment = db.Column(db.String(50), nullable=False)
     state_of_repair = db.Column(db.String(50), nullable=False)
@@ -72,6 +73,11 @@ class PlaygroundRating(db.Model):
     lighting = db.Column(db.String(50), nullable=False)
     bins = db.Column(db.String(50), nullable=False)
     comments = db.Column(db.String(250), nullable=False)
+    overall_score = db.Column(db.Integer, nullable=False)
+    cleanliness_score = db.Column(db.Integer, nullable=False)
+    equipment_score = db.Column(db.Integer, nullable=False)
+    facilities_score = db.Column(db.Integer, nullable=False)
+
 
 class Comment(db.Model):
     __tablename__ = "comments"
@@ -87,9 +93,10 @@ class Comment(db.Model):
 
 
 
-#
+
 # with app.app_context():
 #     db.create_all()
+    
 #______________________________________Create WTF Form______________________________________________________#
 
 class CreatePostForm(FlaskForm):
@@ -103,6 +110,7 @@ class CreateRatingForm(FlaskForm):
     town = StringField('Town Name', validators=[DataRequired()])
     map_url = StringField('Map Link', validators=[DataRequired()])
     opening_hours = StringField('Opening and Closing (24h Format 00:00)', validators=[DataRequired()])
+    image_url = StringField("Image URL", validators=[DataRequired(), URL()])
     equipment = SelectField('Equipment', coerce=str, choices=["⭐", "⭐⭐", "⭐⭐⭐", "⭐⭐⭐⭐", "⭐⭐⭐⭐⭐"], validators=[DataRequired()])
     state_of_repair = SelectField('State Of Repair', coerce=str, choices=["⭐", "⭐⭐", "⭐⭐⭐", "⭐⭐⭐⭐", "⭐⭐⭐⭐⭐"], validators=[DataRequired()])
     toilets = SelectField('Toilets', coerce=str, choices=["⭐", "⭐⭐", "⭐⭐⭐", "⭐⭐⭐⭐", "⭐⭐⭐⭐⭐"], validators=[DataRequired()])
@@ -140,7 +148,7 @@ def send_email(name, email, subject, message):
     with smtplib.SMTP('smtp.gmail.com') as connection:
         connection.starttls()
         connection.login(user=MY_EMAIL, password=EMAIL_PW)
-        connection.sendmail(from_addr=MY_EMAIL, to_addrs=MY_EMAIL, msg=email_message)
+        connection.sendmail(from_addr=MY_EMAIL, to_addrs=email, msg=email_message)
         connection.close()
 
 def admin_only(f):
@@ -163,7 +171,11 @@ def load_user(user_id):
 def home():
     """Gets 3 most recent posts from database and passes them into the index template"""
     recent_posts = db.session.query(BlogPost).order_by(BlogPost.date.desc()).limit(3).all()
-    return render_template("index.html", posts=recent_posts, current_user=current_user)
+    ratings = db.session.query(PlaygroundRating).all()
+    sorted_ratings = sorted(ratings, key=lambda x: x.overall_score, reverse=True)
+
+
+    return render_template("index.html", posts=recent_posts, current_user=current_user, ratings=sorted_ratings, sort="overall")
 
 
 @app.route("/register", methods=['GET', 'POST'])
@@ -225,6 +237,33 @@ def ratings():
     """Get all ratings from the database and pass into the ratings template"""
     all_ratings = db.session.query(PlaygroundRating).all()
     return render_template("ratings.html", ratings=all_ratings, current_user=current_user)
+
+
+@app.route("/sort-ratings")
+def sort_ratings():
+
+    recent_posts = db.session.query(BlogPost).order_by(BlogPost.date.desc()).limit(3).all()
+    sort_type = request.args.get("sort", "overall")
+    sorted_ratings = []
+    print(sort_type)
+
+    if sort_type == "overall":
+        ratings = db.session.query(PlaygroundRating).all()
+        sorted_ratings = sorted(ratings, key=lambda x: x.overall_score, reverse=True)
+
+    elif sort_type == "cleanliness":
+        ratings = db.session.query(PlaygroundRating).all()
+        sorted_ratings = sorted(ratings, key=lambda x: x.cleanliness_score, reverse=True)
+
+    elif sort_type == "equipment":
+        ratings = db.session.query(PlaygroundRating).all()
+        sorted_ratings = sorted(ratings, key=lambda x: x.equipment_score, reverse=True)
+    elif sort_type == "facilities":
+        ratings = db.session.query(PlaygroundRating).all()
+        sorted_ratings = sorted(ratings, key=lambda x: x.facilities_score, reverse=True)
+    return render_template("index.html", ratings=sorted_ratings, posts=recent_posts, sort=sort_type, autoscroll='true')
+
+
 
 @app.route('/contact', methods=['GET', 'POST'])
 def get_contact_info():
@@ -339,7 +378,13 @@ def create_new_rating():
             toilets=form.toilets.data,
             lighting=form.lighting.data,
             bins=form.bins.data,
-            comments=form.comments.data
+            comments=form.comments.data,
+            overall_score=len(form.equipment.data) + len(form.state_of_repair.data) + len(form.toilets.data) +
+                            len(form.lighting.data) + len(form.bins.data),
+            cleanliness_score=len(form.bins.data) + len(form.state_of_repair.data),
+            equipment_score=len(form.equipment.data) + len(form.state_of_repair.data),
+            facilities_score=len(form.bins.data) + len(form.lighting.data) + len(form.toilets.data),
+            image_url=form.image_url.data
         )
         db.session.add(new_rating)
         db.session.commit()
@@ -363,10 +408,11 @@ def edit_rating(rating_id):
         toilets=rating_to_edit.toilets,
         lighting=rating_to_edit.lighting,
         bins=rating_to_edit.bins,
-        comments=rating_to_edit.comments
+        comments=rating_to_edit.comments,
+        image_url=rating_to_edit.image_url
     )
-    if edit_form.validate_on_submit:
 
+    if edit_form.validate_on_submit:
         rating_to_edit.town = edit_form.town.data
         rating_to_edit.map_url = edit_form.map_url.data
         rating_to_edit.opening_hours = edit_form.opening_hours.data
@@ -376,6 +422,11 @@ def edit_rating(rating_id):
         rating_to_edit.lighting = edit_form.lighting.data
         rating_to_edit.bins = edit_form.bins.data
         rating_to_edit.comments = edit_form.comments.data
+        rating_to_edit.overall_score = len(edit_form.equipment.data) + len(edit_form.state_of_repair.data) + len(edit_form.toilets.data) + len(edit_form.lighting.data) + len(edit_form.bins.data)
+        rating_to_edit.cleanliness_score = len(edit_form.bins.data) + len(edit_form.state_of_repair.data)
+        rating_to_edit.equipment_score = len(edit_form.equipment.data) + len(edit_form.state_of_repair.data)
+        rating_to_edit.facilities_score = len(edit_form.toilets.data) + len(edit_form.bins.data) + len(edit_form.lighting.data)
+        rating_to_edit.image_url = edit_form.image_url.data
         db.session.commit()
         return redirect(url_for('ratings'))
 
@@ -390,6 +441,7 @@ def delete_rating():
     db.session.delete(rating_to_delete)
     db.session.commit()
     return redirect(url_for('ratings'))
+
 
 
 
