@@ -9,7 +9,7 @@ email-validator==2.0.0.post2
 ffmpeg-downloader==0.3.0
 Flask==2.3.3
 Flask-Bootstrap==3.3.7.1
-flask_ckeditor==0.6.0
+flask_ckeditor==0.5.1
 Flask-Gravatar==0.5.0
 Flask-Login==0.6.2
 Flask-SQLAlchemy==3.0.5
