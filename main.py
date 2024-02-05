@@ -14,6 +14,7 @@ from flask_login import UserMixin, login_user, LoginManager, login_required, cur
 import smtplib
 import secrets
 import datetime
+import os
 
 #___________________________________Constants / Instantiations____________________________________________#
 
@@ -35,6 +36,10 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 login_manager = LoginManager()
 login_manager.init_app(app)
+
+
+port = int(os.environ.get("PORT", 5000))
+app.run(host="0.0.0.0", port=port)
 
 
 #_____________________________________Configure DB Tables____________________________________________________#
