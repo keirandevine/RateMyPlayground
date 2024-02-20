@@ -1287,7 +1287,7 @@ color: #999999;
 --------------------------------------------------------------*/
 
 #ratings-grid{
-	border-color: #FFC300;
+	border: 5px solid #FFC300;
 	}
 
 #portfolio-title{

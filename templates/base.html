@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="en">
-  <head>
+  <head title="base-template">
   <meta charset="utf-8">
   <meta content="width=device-width, initial-scale=1.0" name="viewport">
 
@@ -51,9 +51,7 @@
     <div class="container d-flex justify-content-between align-items-center">
 
       <div id="logo">
-        <a href="index.html"><img src="static/assets/img/logo.png" alt="" width="130rem"></a>
-        <!-- Uncomment below if you prefer to use a text logo -->
-        <!--<h1><a href="index.html">Regna</a></h1>-->
+        <a href="{{ url_for('home') }}"><img src="static/assets/img/logo.png" alt="" width="130rem"></a>
       </div>
 
       <nav id="navbar" class="navbar">

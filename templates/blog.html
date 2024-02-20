@@ -9,7 +9,7 @@
     <div class="container d-flex justify-content-between align-items-center">
 
       <div id="logo">
-        <h1><a href="{{ url_for('home') }}">RMP</a></h1>
+        <a href="{{ url_for('home') }}"><img src="static/assets/img/logo.png" alt="Rate my play logo" width="130rem"></a>
       </div>
 
       <nav id="navbar" class="navbar">
@@ -54,7 +54,7 @@
       {% for post in all_posts %}
       <div class="col-md-4">
                <div class="card" style="width: 18rem;">
-  <img src="{{post.img_url}}" class="card-img-top" alt="..." width="100%" height="200px">
+  <img src="{{post.img_url}}" class="card-img-top" alt="Image of playground" width="100%" height="200px">
   <div class="card-body">
     <h5 class="card-title">{{post.title}}</h5>
     <p class="card-text">{{post.subtitle}}</p>
@@ -80,10 +80,8 @@
         {% endif %}
     <!-- ===   ==== End Blog Posts ======= -->
 
-
-
-
 </div>
+      </section>
 {% endblock %}
 
 </body>

@@ -4,18 +4,12 @@
 {% extends 'base.html' %}
 {% import "bootstrap/wtf.html" as wtf %}
 
-
-
-
-
-<body>
-
 {% block navbar %}
 <header id="header" class="fixed-top d-flex align-items-center">
     <div class="container d-flex justify-content-between align-items-center">
 
       <div id="logo">
-        <h1><a href="{{ url_for('home') }}">RMP</a></h1>
+        <a href="{{ url_for('home') }}"><img src="static/assets/img/logo.png" alt="Rate My Play Logo" width="130rem"></a>
       </div>
 
       <nav id="navbar" class="navbar">
